@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:buscarcep/menu_drawer.dart';
 import 'package:http/http.dart' as http;
+import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -47,6 +48,13 @@ class _HomePageState extends State<HomePage> {
             TextField(
               controller: _cep,
               keyboardType: TextInputType.number,
+              inputFormatters: [
+                MaskTextInputFormatter(
+                  mask: '#####-###', // Formato do CEP
+                  filter: {"#": RegExp(r'[0-9]')},
+                  type: MaskAutoCompletionType.lazy,
+                )
+              ],
               decoration: const InputDecoration(
                 border: OutlineInputBorder(),
                 labelText: "Digite o CEP",

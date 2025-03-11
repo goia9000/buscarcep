@@ -1,4 +1,7 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:buscarcep/menu_drawer.dart';
+import 'package:http/http.dart' as http;
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -8,6 +11,23 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  final TextEditingController _cep = TextEditingController();
+  Map<String, dynamic>? _cepData;
+  bool _isLoading = false;
+
+  Future<void> _buscarCep() async {
+    final String cep = _cep.text.trim();
+
+    setState(() => _isLoading = true);
+    final response =
+        await http.get(Uri.parse("https://viacep.com.br/ws/$cep/json/"));
+    setState(() {
+      _cepData = json.decode(response.body);
+      // print(_cepData);
+    });
+    setState(() => _isLoading = false);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -15,36 +35,90 @@ class _HomePageState extends State<HomePage> {
         title: const Text("Buscar Cep"),
         centerTitle: true,
       ),
-      drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
+      drawer: const MenuDrawer(),
+      body: Padding(
+        padding: const EdgeInsets.all(10.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const DrawerHeader(
-              decoration: BoxDecoration(
-                color: Color(0xff00416b),
-              ),
-              child: Text(
-                "Buscar CEP",
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 30,
-                ),
+            const SizedBox(
+              height: 20,
+            ),
+            TextField(
+              controller: _cep,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+                labelText: "Digite o CEP",
               ),
             ),
-            ListTile(
-              leading: const Icon(Icons.info),
-              title: const Text("Buscar CEP"),
-              onTap: (){},
+            const SizedBox(
+              height: 20,
             ),
-            ListTile(
-              leading: const Icon(Icons.policy_outlined),
-              title: const Text("Política de Privacidade"),
-              onTap: (){},
-            )
+            ElevatedButton(
+              onPressed: _buscarCep,
+              child: const Text('Buscar'),
+            ),
+            const SizedBox(
+              height: 30,
+            ),
+            _isLoading
+                ? const LinearProgressIndicator()
+                : Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(10),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            "Informações do CEP",
+                            style: TextStyle(
+                              fontSize: 25,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(
+                            ("CEP: ${_cepData?['cep'] ?? ''}"),
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.normal,
+                            ),
+                          ),
+                          Text(
+                            ("Logradouro: ${_cepData?['logradouro'] ?? ''}"),
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.normal,
+                            ),
+                          ),
+                          Text(
+                            ("Bairro: ${_cepData?['bairro'] ?? ''}"),
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.normal,
+                            ),
+                          ),
+                          Text(
+                            ("Cidade: ${_cepData?['localidade'] ?? ''}"),
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.normal,
+                            ),
+                          ),
+                          Text(
+                            ("Estado: ${_cepData?['uf'] ?? ''}"),
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.normal,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
           ],
         ),
       ),
-      
     );
   }
 }

@@ -21,6 +21,17 @@ void main() {
             fontWeight: FontWeight.bold,
           ),
         ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ButtonStyle(
+            backgroundColor: WidgetStateProperty.all(const Color(0xFFf5ab0c)),
+            foregroundColor: WidgetStateProperty.all(Colors.black),
+            textStyle: WidgetStateProperty.all(
+              const TextStyle(
+                fontSize: 20,
+              ),
+            ),
+          ),
+        ),
       ),
       home:const HomePage()
     ),

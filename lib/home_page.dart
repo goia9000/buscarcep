@@ -4,6 +4,7 @@ import 'package:buscarcep/menu_drawer.dart';
 import 'package:http/http.dart' as http;
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 
+
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -20,13 +21,33 @@ class _HomePageState extends State<HomePage> {
     final String cep = _cep.text.trim();
 
     setState(() => _isLoading = true);
+
     final response =
         await http.get(Uri.parse("https://viacep.com.br/ws/$cep/json/"));
     setState(() {
-      _cepData = json.decode(response.body);
+      if(response.statusCode == 200){
+        _cepData = json.decode(response.body);
+        if(_cepData!.containsKey('erro')){
+          _mostrarAlerta('CEP não enconrtado.');
+          _cepData = null;
+        }
+      } else {
+        _mostrarAlerta('Erro ao buscar o CEP');
+        _cepData = null;
+      }
       // print(_cepData);
     });
     setState(() => _isLoading = false);
+  }
+
+  void _mostrarAlerta(String mensagem) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(mensagem),
+        backgroundColor: Colors.red,
+        duration: const Duration(seconds: 2),
+      ),
+    );
   }
 
   @override
@@ -72,7 +93,7 @@ class _HomePageState extends State<HomePage> {
             ),
             _isLoading
                 ? const LinearProgressIndicator()
-                : Card(
+                : _cepData != null ? Card(
                     child: Padding(
                       padding: const EdgeInsets.all(10),
                       child: Column(
@@ -123,7 +144,7 @@ class _HomePageState extends State<HomePage> {
                         ],
                       ),
                     ),
-                  ),
+                  ): Container(),
           ],
         ),
       ),
